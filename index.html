@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ミナト社内ポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+Antique:wght@500;700&display=swap">
+<style>
+/* Layout: 業務ポータル — 左にカレンダーと予定、中央にフィード、右にお知らせ。藍色をアクセントに、土曜は青・日祝は赤の和式カレンダー表記 */
+:root{
+  --bg:#F1F4F8; --surface:#FFFFFF; --surface-2:#F6F8FB; --line:#DCE2EA; --line-strong:#C6CEDA;
+  --fg:#17202C; --muted:#586477; --accent:#1F4E9A; --accent-fg:#FFFFFF; --accent-soft:#E3EBF7;
+  --warm:#B5501A; --warm-soft:#FBECE2; --sat:#2459B8; --sun:#C0392F;
+  --c-all:#1F4E9A; --c-meet:#11797A; --c-train:#3B7E39; --c-hr:#B5501A; --c-event:#AD3A77; --c-it:#5E6A7C; --c-leave:#8A6A0E; --c-trip:#6E52A3; --ok:#2E7D4F;
+  --f-display:"Zen Kaku Gothic Antique","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1219; --surface:#161B24; --surface-2:#1B212C; --line:#283040; --line-strong:#364052;
+    --fg:#E4E9F0; --muted:#97A2B4; --accent:#8AAEEB; --accent-fg:#0E1219; --accent-soft:#1E2A41;
+    --warm:#E8925E; --warm-soft:#3A2518; --sat:#8AAEEB; --sun:#EE7B72;
+    --c-all:#8AAEEB; --c-meet:#5CC3BF; --c-train:#86C281; --c-hr:#E8925E; --c-event:#E487BA; --c-it:#97A2B4; --c-leave:#D8B45A; --c-trip:#B39BE0; --ok:#6CC48A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1219; --surface:#161B24; --surface-2:#1B212C; --line:#283040; --line-strong:#364052;
+  --fg:#E4E9F0; --muted:#97A2B4; --accent:#8AAEEB; --accent-fg:#0E1219; --accent-soft:#1E2A41;
+  --warm:#E8925E; --warm-soft:#3A2518; --sat:#8AAEEB; --sun:#EE7B72;
+  --c-all:#8AAEEB; --c-meet:#5CC3BF; --c-train:#86C281; --c-hr:#E8925E; --c-event:#E487BA; --c-it:#97A2B4; --c-leave:#D8B45A; --c-trip:#B39BE0; --ok:#6CC48A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num,time,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* Header */
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top-in{max-width:1380px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:34px;height:34px;border-radius:8px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:17px;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.02em;line-height:1.2;white-space:nowrap}
+.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.08em;line-height:1.2}
+.top-date{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+.me{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:13px;flex:none;
+  --c:var(--c-all);background:color-mix(in srgb,var(--c) 16%,var(--surface));color:var(--c)}
+.me-name{font-size:13px;white-space:nowrap}
+@media (max-width:560px){.me-name,.brand-sub{display:none}.top-date{font-size:12px}}
+
+.wrap{max-width:1380px;margin:0 auto;padding-inline:16px;padding-block:20px 40px}
+.hello{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:18px}
+.hello h1{font-family:var(--f-display);font-weight:700;font-size:22px;margin:0;text-wrap:balance}
+.hello-stats{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:13px}
+.hello-stats b{color:var(--fg);font-family:var(--f-mono);font-weight:500}
+
+.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.side,.main{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (min-width:780px){.layout{grid-template-columns:320px minmax(0,1fr);align-items:start}}
+@media (min-width:1200px){
+  .main{display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+  .rcol{order:2}.feed{order:1}
+}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.ph{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+.ph h2{font-family:var(--f-display);font-weight:700;font-size:15px;margin:0;letter-spacing:.04em}
+.ph .count{font-size:12px;color:var(--muted)}
+.ph .spacer{flex:1}
+.icon-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;width:30px;height:30px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{color:var(--fg);border-color:var(--line-strong)}
+.icon-btn svg{width:16px;height:16px}
+.text-btn{border:0;background:none;color:var(--accent);font-size:12.5px;padding:4px 2px}
+.text-btn:hover{text-decoration:underline}
+.btn{border:0;border-radius:8px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:13px;padding:7px 14px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:default;filter:none}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn svg{width:14px;height:14px}
+
+/* Calendar */
+.cal-head{display:flex;align-items:center;gap:8px;padding:14px 16px 8px}
+.cal-title{font-family:var(--f-display);font-weight:700;font-size:17px;flex:1}
+.cal-title .num{font-family:var(--f-display)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:0 10px 10px;gap:2px}
+.wd{font-size:11px;text-align:center;color:var(--muted);padding:4px 0;letter-spacing:.06em}
+.wd.sun{color:var(--sun)}.wd.sat{color:var(--sat)}
+.day{border:0;background:none;border-radius:8px;aspect-ratio:1/1.05;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;gap:3px;position:relative}
+.day:hover{background:var(--surface-2)}
+.day .n{font-family:var(--f-mono);font-size:13px;line-height:1;width:24px;height:24px;display:grid;place-items:center;border-radius:50%}
+.day.sat .n{color:var(--sat)}
+.day.sun .n,.day.hol .n{color:var(--sun)}
+.day.out{opacity:.38}
+.day.today .n{background:var(--accent);color:var(--accent-fg)}
+.day.sel{background:var(--accent-soft)}
+.day.sel::after{content:"";position:absolute;inset:0;border:1.5px solid var(--accent);border-radius:8px;pointer-events:none}
+.dots{display:flex;gap:3px;height:5px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--c)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 16px 14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* Schedule */
+.sched-date{font-family:var(--f-display);font-weight:700;font-size:15px}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;letter-spacing:.04em;white-space:nowrap;
+  --c:var(--c-all);background:color-mix(in srgb,var(--c) 13%,var(--surface));color:var(--c)}
+.badge.important{--c:var(--warm);background:var(--warm);color:var(--surface)}
+.ev-list{list-style:none;margin:0;padding:0 16px 6px;display:flex;flex-direction:column}
+.ev{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
+.ev:first-child{border-top:0}
+.ev time{font-size:12.5px;line-height:1.35;color:var(--fg)}
+.ev time small{display:block;color:var(--muted);font-size:11px}
+.ev-body{min-width:0;border-left:3px solid var(--c);padding-left:10px}
+.ev-title{font-weight:700;font-size:13.5px;line-height:1.4;overflow-wrap:anywhere}
+.ev-meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:2px}
+.ev-del{border:0;background:none;color:var(--muted);padding:2px;border-radius:6px}
+.ev-del:hover{color:var(--sun)}
+.ev-del svg{width:15px;height:15px;display:block}
+.empty{padding:14px 16px 16px;color:var(--muted);font-size:13px}
+.sub-h{font-size:11.5px;color:var(--muted);letter-spacing:.1em;padding:12px 16px 4px;border-top:1px solid var(--line);margin-top:4px}
+.up-list{list-style:none;margin:0;padding:2px 8px 10px}
+.up{display:grid;grid-template-columns:58px minmax(0,1fr);gap:8px;padding:7px 8px;border-radius:8px;width:100%;border:0;background:none;text-align:left;align-items:baseline}
+.up:hover{background:var(--surface-2)}
+.up .d{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.up .t{font-size:13px;overflow-wrap:anywhere}
+.up .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c);margin-right:7px;vertical-align:1px}
+
+.ev-form{margin:0 16px 14px;padding:12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);display:grid;gap:10px}
+.ev-form label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=text],input[type=time],input[type=date],input[type=number],select,textarea{width:100%;border:1px solid var(--line-strong);background:var(--surface);border-radius:7px;padding:7px 9px;font-size:13.5px;color:var(--fg);min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.form-err{color:var(--sun);font-size:12px;margin:0}
+.form-actions{display:flex;justify-content:flex-end;gap:8px}
+
+/* Notices */
+.tabs{display:flex;gap:4px;padding:0 12px 10px;overflow-x:auto;scrollbar-width:none}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.n-list{list-style:none;margin:0;padding:0}
+.n-item{border-top:1px solid var(--line)}
+.n-head{display:grid;grid-template-columns:10px minmax(0,1fr);gap:8px;width:100%;text-align:left;border:0;background:none;padding:12px 16px}
+.n-head:hover{background:var(--surface-2)}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:7px}
+.n-item.read .unread-dot{background:transparent}
+.n-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:3px}
+.n-tags time{font-size:11.5px;color:var(--muted);margin-left:2px}
+.n-title{font-size:13.5px;line-height:1.5;overflow-wrap:anywhere}
+.n-item:not(.read) .n-title{font-weight:700}
+.n-body{padding:0 16px 14px 34px;font-size:13px;color:var(--fg);line-height:1.8}
+.n-body p{margin:0 0 6px;max-width:62ch}
+.n-body .from{color:var(--muted);font-size:12px}
+
+/* Feed */
+.composer{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;padding:4px 16px 14px;border-bottom:1px solid var(--line)}
+.composer .avatar{width:36px;height:36px}
+.composer textarea{resize:vertical;min-height:64px;line-height:1.6}
+.comp-foot{display:flex;align-items:center;gap:10px;margin-top:8px}
+.comp-foot .mono{font-size:11.5px;color:var(--muted);margin-right:auto}
+.comp-hint{font-size:11.5px;color:var(--muted);margin:6px 0 0}
+.composer.drag textarea{outline:2px dashed var(--accent);outline-offset:2px}
+.comp-imgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.thumb{position:relative;width:78px;height:78px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(10,14,20,.66);color:#fff;display:grid;place-items:center;padding:0}
+.thumb button svg{width:13px;height:13px}
+.img-btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.img-btn:hover{color:var(--fg);border-color:var(--line-strong)}
+.img-btn svg{width:15px;height:15px}
+.img-btn{position:relative;overflow:hidden;cursor:pointer}
+.img-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.img-btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;padding:0;font-size:16px}
+.p-imgs{display:grid;gap:4px;margin-top:8px;border-radius:10px;overflow:hidden;max-width:520px}
+.p-imgs.multi{grid-template-columns:1fr 1fr}
+.p-img{border:0;padding:0;margin:0;background:var(--surface-2);display:block;cursor:zoom-in;min-width:0}
+.p-img img{display:block;width:100%}
+.p-imgs.single .p-img img{max-height:420px;object-fit:contain;width:auto;max-width:100%}
+.p-imgs.single .p-img{justify-self:start;border-radius:10px;overflow:hidden}
+.p-imgs.multi .p-img img{aspect-ratio:4/3;object-fit:cover;height:100%}
+.p-imgs.n3 .p-img:first-child{grid-column:1/-1}
+.p-imgs.n3 .p-img:first-child img{aspect-ratio:16/9}
+.lb{position:fixed;inset:0;z-index:20;background:rgba(6,9,14,.86);display:grid;place-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+.lb button{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center}
+.lb button svg{width:18px;height:18px}
+.posts{list-style:none;margin:0;padding:0}
+.post{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;padding:14px 16px;border-top:1px solid var(--line)}
+.post:first-child{border-top:0}
+.post .avatar{width:36px;height:36px}
+.p-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.p-name{font-weight:700;font-size:13.5px}
+.p-dept{font-size:12px;color:var(--muted)}
+.p-time{font-size:11.5px;color:var(--muted);margin-left:auto;font-family:var(--f-mono)}
+.p-text{margin:4px 0 0;font-size:13.5px;line-height:1.8;overflow-wrap:anywhere;max-width:68ch}
+.tag{color:var(--accent)}
+.p-actions{display:flex;gap:4px;margin-top:6px;margin-left:-8px}
+.act{border:0;background:none;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:7px;color:var(--muted);font-size:12.5px}
+.act:hover{background:var(--surface-2);color:var(--fg)}
+.act svg{width:16px;height:16px}
+.act[aria-pressed="true"]{color:var(--c-event)}
+.act[aria-pressed="true"] svg path{fill:currentColor}
+.comments{margin-top:8px;border-left:2px solid var(--line);padding-left:12px;display:grid;gap:8px}
+.cmt{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.cmt b{font-size:12.5px;margin-right:6px}
+.cmt-form{display:flex;gap:6px}
+.cmt-form input{flex:1}
+.cmt-form .btn{padding:6px 12px}
+
+
+/* Requests & approvals */
+.rcol{display:flex;flex-direction:column;gap:16px;min-width:0}
+.bal{display:grid;gap:6px;padding:0 16px 12px}
+.bal-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;font-size:12.5px;color:var(--muted)}
+.bal-row b{font-family:var(--f-mono);font-size:20px;font-weight:500;color:var(--fg);margin-right:2px}
+.meter{height:6px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+.meter .used{background:var(--c-leave)}
+.meter .pend{background:color-mix(in srgb,var(--c-leave) 38%,var(--surface))}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;padding:2px;gap:2px;background:var(--surface);justify-self:start}
+.seg button{border:0;background:none;border-radius:6px;padding:4px 18px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:700}
+.rq-sum{font-size:12.5px;background:var(--surface);border:1px dashed var(--line-strong);border-radius:7px;padding:7px 10px;font-variant-numeric:tabular-nums}
+.rq-route{font-size:12px;color:var(--muted);margin:0}
+.rq-list{list-style:none;margin:0;padding:0}
+.rq{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;padding:12px 16px;border-top:1px solid var(--line)}
+.rq .avatar{width:36px;height:36px}
+.rq-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.rq-name{font-weight:700;font-size:13.5px}
+.status{font-size:11px;font-weight:700;padding:0 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;margin-left:auto}
+.st-pending{color:var(--warm)}.st-approved{color:var(--ok)}.st-rejected{color:var(--sun)}.st-withdrawn{color:var(--muted)}
+.rq-when{font-family:var(--f-mono);font-size:12.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+.rq-when span{color:var(--muted);margin-left:6px}
+.rq-detail{font-size:12.5px;color:var(--fg);margin-top:2px;overflow-wrap:anywhere}
+.rq-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.rq-note{margin-top:6px;font-size:12.5px;background:color-mix(in srgb,var(--sun) 8%,var(--surface));border-left:3px solid var(--sun);padding:6px 10px;border-radius:0 6px 6px 0;overflow-wrap:anywhere}
+.rq-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;align-items:center}
+.rq-actions .ask{font-size:12.5px}
+.btn.danger{background:var(--surface);border:1px solid var(--line-strong);color:var(--sun)}
+.btn.danger.solid{background:var(--sun);border-color:var(--sun);color:var(--surface)}
+.rq-reject{display:grid;gap:6px;margin-top:9px}
+.rq-reject textarea{min-height:52px;resize:vertical}
+.rq-reject label{font-size:12px;color:var(--muted)}
+.foot{color:var(--muted);font-size:12px;margin-top:22px;text-align:center}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--fg);color:var(--surface);padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:10;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">ミ</div>
+      <div>
+        <div class="brand-name">ミナト社内ポータル</div>
+        <div class="brand-sub">MINATO SYSTEMS INTRANET</div>
+      </div>
+    </div>
+    <div class="top-date mono" id="top-date"></div>
+    <div class="me">
+      <div class="avatar" style="--c:var(--c-meet)" aria-hidden="true">鈴</div>
+      <span class="me-name">鈴木 拓也</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hello">
+    <h1 id="greet">おはようございます、鈴木さん</h1>
+    <div class="hello-stats" id="hello-stats"></div>
+  </div>
+
+  <div class="layout">
+    <div class="side">
+      <section class="panel" aria-labelledby="cal-title">
+        <div class="cal-head">
+          <h2 class="cal-title" id="cal-title"></h2>
+          <button class="text-btn" id="cal-today" type="button">今日</button>
+          <button class="icon-btn" id="cal-prev" type="button" aria-label="前の月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="icon-btn" id="cal-next" type="button" aria-label="次の月"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="cal-grid" id="cal-grid" role="grid"></div>
+        <div class="legend" id="legend"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="sched-h">
+        <div class="ph">
+          <h2 id="sched-h">予定</h2>
+          <span class="sched-date" id="sched-date"></span>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="add-toggle" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>追加</button>
+        </div>
+        <form class="ev-form" id="ev-form" hidden>
+          <label for="ev-title">件名<input type="text" id="ev-title" maxlength="60" placeholder="例：プロジェクト定例"></label>
+          <div class="row2">
+            <label for="ev-start">開始<input type="time" id="ev-start" value="10:00"></label>
+            <label for="ev-end">終了<input type="time" id="ev-end" value="11:00"></label>
+          </div>
+          <div class="row2">
+            <label for="ev-place">場所<input type="text" id="ev-place" maxlength="40" placeholder="例：第2会議室"></label>
+            <label for="ev-cat">種別<select id="ev-cat"></select></label>
+          </div>
+          <p class="form-err" id="ev-err" hidden></p>
+          <div class="form-actions">
+            <button class="text-btn" type="button" id="ev-cancel">キャンセル</button>
+            <button class="btn" type="submit">予定を追加</button>
+          </div>
+        </form>
+        <ul class="ev-list" id="ev-list"></ul>
+        <div class="sub-h">この先の予定</div>
+        <ul class="up-list" id="up-list"></ul>
+      </section>
+    </div>
+
+    <div class="main">
+      <div class="rcol">
+      <section class="panel approvals" aria-labelledby="ap-h">
+        <div class="ph">
+          <h2 id="ap-h">申請・承認</h2>
+          <span class="count" id="ap-count"></span>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="rq-toggle" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新規申請</button>
+        </div>
+        <div class="bal" id="bal"></div>
+        <form class="ev-form" id="rq-form" hidden>
+          <div class="seg" role="group" aria-label="申請の種類">
+            <button type="button" data-t="leave" aria-pressed="true">年休</button>
+            <button type="button" data-t="trip" aria-pressed="false">出張</button>
+          </div>
+          <div id="f-leave">
+            <label for="rq-kind">区分<select id="rq-kind"><option value="full">全日</option><option value="am">午前半休</option><option value="pm">午後半休</option></select></label>
+          </div>
+          <div class="row2">
+            <label for="rq-from">開始日<input type="date" id="rq-from"></label>
+            <label for="rq-to">終了日<input type="date" id="rq-to"></label>
+          </div>
+          <div id="f-leave2">
+            <label for="rq-reason">理由（任意）<input type="text" id="rq-reason" maxlength="60" placeholder="例：私用のため"></label>
+          </div>
+          <div id="f-trip" hidden style="display:grid;gap:10px">
+            <label for="rq-dest">行き先<input type="text" id="rq-dest" maxlength="30" placeholder="例：名古屋"></label>
+            <label for="rq-purpose">目的<input type="text" id="rq-purpose" maxlength="80" placeholder="例：顧客訪問（下期計画の説明）"></label>
+            <div class="row2">
+              <label for="rq-trans">交通手段<select id="rq-trans"><option value="shinkansen">新幹線</option><option value="air">飛行機</option><option value="car">社用車</option><option value="other">その他</option></select></label>
+              <label for="rq-cost">概算費用（円）<input type="number" id="rq-cost" min="0" step="100" inputmode="numeric" placeholder="42600"></label>
+            </div>
+          </div>
+          <div class="rq-sum" id="rq-sum"></div>
+          <p class="rq-route">承認者：山田 浩二（経営企画部 部長）</p>
+          <p class="form-err" id="rq-err" hidden></p>
+          <div class="form-actions">
+            <button class="text-btn" type="button" id="rq-cancel">キャンセル</button>
+            <button class="btn" type="submit">申請する</button>
+          </div>
+        </form>
+        <div class="tabs" role="tablist" id="ap-tabs"></div>
+        <ul class="rq-list" id="rq-list"></ul>
+      </section>
+
+      <section class="panel notices" aria-labelledby="n-h">
+        <div class="ph">
+          <h2 id="n-h">お知らせ</h2>
+          <span class="count" id="n-count"></span>
+          <span class="spacer"></span>
+          <button class="text-btn" id="n-readall" type="button">すべて既読にする</button>
+        </div>
+        <div class="tabs" role="tablist" id="n-tabs"></div>
+        <ul class="n-list" id="n-list"></ul>
+      </section>
+      </div>
+
+      <section class="panel feed" aria-labelledby="f-h">
+        <div class="ph">
+          <h2 id="f-h">フィード</h2>
+          <span class="count">社内のつぶやき・共有</span>
+        </div>
+        <form class="composer" id="composer">
+          <div class="avatar" style="--c:var(--c-meet)" aria-hidden="true">鈴</div>
+          <div>
+            <label for="post-text" class="count" style="display:block;margin-bottom:4px">いま共有したいこと</label>
+            <textarea id="post-text" maxlength="500" placeholder="業務の進捗、お礼、ちょっとした情報など。#タグ も使えます"></textarea>
+            <div class="comp-imgs" id="post-imgs" hidden></div>
+            <p class="comp-hint">画像は貼り付け（Ctrl+V / ⌘V）、ドラッグ＆ドロップ、または選択で追加できます（最大4枚）</p>
+            <div class="comp-foot">
+              <label class="img-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></svg>画像<input type="file" id="post-file" accept="image/*" multiple aria-label="画像を選択"></label>
+              <span class="mono" id="post-len">0 / 500</span>
+              <button class="btn" type="submit" id="post-btn" disabled>投稿</button>
+            </div>
+          </div>
+        </form>
+        <ul class="posts" id="posts"></ul>
+      </section>
+    </div>
+  </div>
+
+  <p class="foot">表示中の予定・お知らせ・投稿はサンプルです。追加した予定・投稿・申請、承認や差戻しの結果は、このブラウザにのみ保存されます。</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="lb" id="lb" hidden role="dialog" aria-label="画像の拡大表示"><img id="lb-img" alt=""><button type="button" id="lb-close" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+
+<script>
+(function(){
+const WD=['日','月','火','水','木','金','土'];
+const HOL={
+ '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日','2026-03-20':'春分の日',
+ '2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日','2026-05-05':'こどもの日','2026-05-06':'振替休日',
+ '2026-07-20':'海の日','2026-08-11':'山の日','2026-09-21':'敬老の日','2026-09-22':'国民の休日','2026-09-23':'秋分の日',
+ '2026-10-12':'スポーツの日','2026-11-03':'文化の日','2026-11-23':'勤労感謝の日',
+ '2027-01-01':'元日','2027-01-11':'成人の日','2027-02-11':'建国記念の日','2027-02-23':'天皇誕生日','2027-03-21':'春分の日','2027-03-22':'振替休日',
+ '2027-04-29':'昭和の日','2027-05-03':'憲法記念日','2027-05-04':'みどりの日','2027-05-05':'こどもの日','2027-07-19':'海の日',
+ '2027-08-11':'山の日','2027-09-20':'敬老の日','2027-09-23':'秋分の日','2027-10-11':'スポーツの日','2027-11-03':'文化の日','2027-11-23':'勤労感謝の日'
+};
+const CATS={
+ all:{label:'全社',c:'--c-all'}, meet:{label:'会議',c:'--c-meet'}, train:{label:'研修',c:'--c-train'},
+ hr:{label:'人事・総務',c:'--c-hr'}, event:{label:'イベント',c:'--c-event'}, it:{label:'IT',c:'--c-it'},
+ leave:{label:'休暇',c:'--c-leave'}, trip:{label:'出張',c:'--c-trip'}
+};
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2]);};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const isOff=d=>d.getDay()===0||d.getDay()===6||!!HOL[ymd(d)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md=d=>(d.getMonth()+1)+'/'+d.getDate();
+const mdw=d=>md(d)+'('+WD[d.getDay()]+')';
+
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const NOW=Date.now();
+function biz(n){let d=new Date(TODAY),c=0;const s=n<0?-1:1;while(c<Math.abs(n)){d=addDays(d,s);if(!isOff(d))c++;}return d;}
+
+/* ---------- storage (per browser) ---------- */
+const KEY='minato-portal-v1';
+let store={events:[],read:[],posts:[],likes:{},comments:{},requests:[],reqState:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)store=Object.assign(store,s);}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));return true;}catch(e){return false;}}
+
+/* ---------- sample data ---------- */
+const SAMPLE_EVENTS=[
+ [TODAY,'22:00','24:00','定例サーバーメンテナンス','オンライン','it'],
+ [biz(-4),'12:00','13:00','部署ランチ会','本社カフェテリア','event'],
+ [biz(-2),'10:00','11:30','経営会議','役員会議室','meet'],
+ [biz(1),'09:00','09:30','全社朝会','大会議室A／オンライン','all'],
+ [biz(1),'10:00','11:00','経営企画部 定例','第3会議室','meet'],
+ [biz(2),'13:00','17:00','下期キックオフ','本社ホール','all'],
+ [biz(4),'09:00','12:00','定期健康診断','2F 多目的室','hr'],
+ [biz(4),'15:00','16:00','予算見直しミーティング','第2会議室','meet'],
+ [biz(6),'15:00','16:00','情報セキュリティ研修','オンライン','train'],
+ [biz(8),'11:00','11:30','1on1（佐藤さん）','小会議室B','meet'],
+ [biz(9),'14:00','15:30','新製品デザインレビュー','第2会議室','meet'],
+ [biz(12),'16:00','16:45','上期評価面談','人事部 面談室','hr'],
+ [biz(15),'18:30','20:30','秋の社内懇親会','本社カフェテリア','event'],
+ [biz(18),'10:00','12:00','新任リーダー研修','研修室','train']
+].map((e,i)=>({id:'s'+i,date:ymd(e[0]),start:e[1],end:e[2],title:e[3],place:e[4],cat:e[5]}));
+
+const vpnDue=biz(9);
+const NOTICES=[
+ {id:'n1',ago:0,cat:'it',imp:true,title:'VPNクライアント更新のお願い（'+mdw(vpnDue)+'まで）',
+  body:['セキュリティ強化のため、VPNクライアントを最新版へ更新してください。期限を過ぎると社外から接続できなくなります。','更新手順は社内Wikiの「VPN接続ガイド」に掲載しています。不明点はITヘルプデスク（内線 4400）まで。'],from:'情報システム部'},
+ {id:'n2',ago:1,cat:'hr',imp:false,title:'下期キックオフの会場とタイムテーブル',
+  body:['下期キックオフは本社ホールで開催します。13:00開場、13:30開始です。','第2部の部門別セッションは各会議室に分かれて実施します。座席表は当日受付で配布します。'],from:'経営企画部'},
+ {id:'n3',ago:2,cat:'hr',imp:false,title:'10月入社メンバーのご紹介',
+  body:['今月は開発部に2名、営業部に1名が入社しました。フィードでも自己紹介を投稿しているので、ぜひ声をかけてください。'],from:'人事部'},
+ {id:'n4',ago:4,cat:'hr',imp:true,title:'定期健康診断の受診について',
+  body:['今年度の定期健康診断を2F 多目的室で実施します。前日21時以降は飲食を控えてください（水は可）。','都合が合わない方は人事部までご連絡ください。外部医療機関での受診も選べます。'],from:'人事部 労務グループ'},
+ {id:'n5',ago:7,cat:'ga',imp:false,title:'年末調整書類の提出スケジュール',
+  body:['年末調整の書類提出は11月中旬から受け付けます。保険料控除証明書が届いたら保管しておいてください。'],from:'総務部'},
+ {id:'n6',ago:11,cat:'it',imp:false,title:'社内Wikiの検索機能を改善しました',
+  body:['全文検索で添付ファイル（PDF・Word）の中身も検索できるようになりました。'],from:'情報システム部'}
+];
+const NCAT={it:{label:'IT',c:'--c-it'},hr:{label:'人事',c:'--c-hr'},ga:{label:'総務',c:'--c-all'}};
+
+const SAMPLE_POSTS=[
+ {id:'p1',name:'山本 彩',dept:'人事部',c:'--c-hr',ago:18,likes:6,text:'来週、10月入社の皆さんの歓迎ランチを企画しています。参加できる方はコメントで教えてください。お店はこれから決めます！ #歓迎ランチ',
+  cmts:[{name:'中村 健太',text:'開発部から2名参加します！'}]},
+ {id:'p2',name:'中村 健太',dept:'開発部',c:'--c-meet',ago:130,likes:14,text:'経費精算アプリ v3.2 をリリースしました。領収書の写真から金額と日付を自動で読み取れるようになっています。不具合があればヘルプデスク経由でご連絡ください。 #リリース',cmts:[]},
+ {id:'p3',name:'小林 真由',dept:'総務部',c:'--c-event',ago:300,likes:22,text:'3Fリフレッシュエリアのコーヒーマシンを入れ替えました。カフェラテも選べます。使い終わったらトレイの水を捨てていただけると助かります。',
+  cmts:[{name:'高橋 翔',text:'ありがとうございます、毎朝使ってます。'},{name:'伊藤 美咲',text:'ラテおいしいです！'}]},
+ {id:'p4',name:'高橋 翔',dept:'営業部',c:'--c-all',ago:1500,likes:31,text:'港北物流さんの基幹システム更新案件、正式に受注しました。提案資料づくりを手伝ってくれた開発部と企画部の皆さん、本当にありがとうございました。 #受注報告',cmts:[]},
+ {id:'p5',name:'伊藤 美咲',dept:'マーケティング部',c:'--c-train',ago:2900,likes:9,text:'先週のオンラインセミナーの登壇資料と録画を共有フォルダに置きました。参加登録は412名、アンケートの満足度は4.6でした。 #セミナー',cmts:[]}
+].map(p=>Object.assign(p,{ts:NOW-p.ago*60000}));
+
+/* ---------- helpers ---------- */
+function allEvents(){return SAMPLE_EVENTS.concat(store.events,reqEvents());}
+function eventsOn(ds){return allEvents().filter(e=>e.date===ds).sort((a,b)=>a.start.localeCompare(b.start));}
+function rel(ts){
+  const m=Math.floor((NOW-ts)/60000);
+  if(m<1)return'たった今';if(m<60)return m+'分前';
+  const h=Math.floor(m/60);if(h<24)return h+'時間前';
+  const d=Math.floor(h/24);if(d===1)return'昨日';return d+'日前';
+}
+let toastT;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2000);}
+const ICON_X='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ---------- header ---------- */
+$('top-date').textContent=TODAY.getFullYear()+'年'+(TODAY.getMonth()+1)+'月'+TODAY.getDate()+'日('+WD[TODAY.getDay()]+')';
+const hr=new Date().getHours();
+$('greet').textContent=(hr<11?'おはようございます':hr<18?'こんにちは':'おつかれさまです')+'、鈴木さん';
+
+/* ---------- calendar ---------- */
+let viewY=TODAY.getFullYear(),viewM=TODAY.getMonth(),sel=ymd(TODAY);
+function renderCal(){
+  $('cal-title').innerHTML='<span class="num">'+viewY+'</span>年 <span class="num">'+(viewM+1)+'</span>月';
+  const first=new Date(viewY,viewM,1),start=addDays(first,-first.getDay());
+  const days=new Date(viewY,viewM+1,0).getDate();
+  const cells=Math.ceil((first.getDay()+days)/7)*7;
+  const evs=allEvents();
+  let h=WD.map((w,i)=>'<div class="wd'+(i===0?' sun':i===6?' sat':'')+'">'+w+'</div>').join('');
+  const todayS=ymd(TODAY);
+  for(let i=0;i<cells;i++){
+    const d=addDays(start,i),ds=ymd(d),hol=HOL[ds];
+    const cats=[...new Set(evs.filter(e=>e.date===ds).map(e=>e.cat))].slice(0,3);
+    const cls=['day',d.getMonth()!==viewM?'out':'',d.getDay()===0?'sun':'',d.getDay()===6?'sat':'',hol?'hol':'',ds===todayS?'today':'',ds===sel?'sel':''].filter(Boolean).join(' ');
+    const label=(d.getMonth()+1)+'月'+d.getDate()+'日'+WD[d.getDay()]+'曜日'+(hol?' '+hol:'')+(cats.length?' 予定あり':'');
+    h+='<button type="button" class="'+cls+'" data-date="'+ds+'" aria-label="'+label+'"'+(hol?' title="'+hol+'"':'')+(ds===sel?' aria-current="date"':'')+'><span class="n">'+d.getDate()+'</span><span class="dots">'+cats.map(c=>'<span class="dot" style="--c:var('+CATS[c].c+')"></span>').join('')+'</span></button>';
+  }
+  $('cal-grid').innerHTML=h;
+}
+$('cal-grid').addEventListener('click',e=>{
+  const b=e.target.closest('.day');if(!b)return;
+  sel=b.dataset.date;const d=parse(sel);
+  if(d.getMonth()!==viewM||d.getFullYear()!==viewY){viewY=d.getFullYear();viewM=d.getMonth();}
+  renderCal();renderSched();
+});
+$('cal-prev').onclick=()=>{viewM--;if(viewM<0){viewM=11;viewY--;}renderCal();};
+$('cal-next').onclick=()=>{viewM++;if(viewM>11){viewM=0;viewY++;}renderCal();};
+$('cal-today').onclick=()=>{viewY=TODAY.getFullYear();viewM=TODAY.getMonth();sel=ymd(TODAY);renderCal();renderSched();};
+$('legend').innerHTML=Object.values(CATS).map(c=>'<span><span class="dot" style="--c:var('+c.c+')"></span>'+c.label+'</span>').join('');
+
+/* ---------- schedule ---------- */
+function renderSched(){
+  const d=parse(sel),hol=HOL[sel],isToday=sel===ymd(TODAY);
+  $('sched-date').innerHTML=(d.getMonth()+1)+'月'+d.getDate()+'日('+WD[d.getDay()]+')'+(isToday?' <span class="badge">今日</span>':'')+(hol?' <span class="badge" style="--c:var(--sun)">'+hol+'</span>':'');
+  const list=eventsOn(sel);
+  $('ev-list').innerHTML=list.length?list.map(e=>
+    '<li class="ev"><time>'+(e.start?e.start+'<small>'+e.end+'</small>':'終日')+'</time>'+
+    '<div class="ev-body" style="--c:var('+CATS[e.cat].c+')"><div class="ev-title">'+esc(e.title)+'</div>'+
+    '<div class="ev-meta"><span>'+CATS[e.cat].label+'</span>'+(e.place?'<span>'+esc(e.place)+'</span>':'')+'</div></div>'+
+    (e.own?'<button class="ev-del" type="button" data-id="'+e.id+'" aria-label="'+esc(e.title)+'を削除">'+ICON_X+'</button>':'<span></span>')+'</li>'
+  ).join(''):'<li class="empty">この日の予定はありません。</li>';
+  const up=allEvents().filter(e=>e.date>sel).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).slice(0,5);
+  $('up-list').innerHTML=up.length?up.map(e=>{const ed=parse(e.date);
+    return '<li><button type="button" class="up" data-date="'+e.date+'"><span class="d">'+mdw(ed)+'</span><span class="t" style="--c:var('+CATS[e.cat].c+')">'+esc(e.title)+'</span></button></li>';}).join('')
+    :'<li class="empty" style="padding:6px 8px">登録されている予定はありません。</li>';
+  updateStats();
+}
+$('ev-list').addEventListener('click',e=>{
+  const b=e.target.closest('.ev-del');if(!b)return;
+  store.events=store.events.filter(x=>x.id!==b.dataset.id);save();renderCal();renderSched();toast('予定を削除しました');
+});
+$('up-list').addEventListener('click',e=>{
+  const b=e.target.closest('.up');if(!b)return;sel=b.dataset.date;const d=parse(sel);viewY=d.getFullYear();viewM=d.getMonth();renderCal();renderSched();
+});
+$('ev-cat').innerHTML=Object.entries(CATS).filter(([k])=>k!=='leave'&&k!=='trip').map(([k,v])=>'<option value="'+k+'"'+(k==='meet'?' selected':'')+'>'+v.label+'</option>').join('');
+function toggleForm(open){$('ev-form').hidden=!open;$('add-toggle').setAttribute('aria-expanded',open);$('ev-err').hidden=true;if(open)$('ev-title').focus();}
+$('add-toggle').onclick=()=>toggleForm($('ev-form').hidden);
+$('ev-cancel').onclick=()=>toggleForm(false);
+$('ev-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const t=$('ev-title').value.trim(),s=$('ev-start').value,en=$('ev-end').value||s;
+  const err=$('ev-err');
+  if(!t){err.textContent='件名を入力してください。';err.hidden=false;return;}
+  if(!s){err.textContent='開始時刻を入力してください。';err.hidden=false;return;}
+  if(en<s){err.textContent='終了時刻は開始時刻より後にしてください。';err.hidden=false;return;}
+  store.events.push({id:'u'+Date.now(),date:sel,start:s,end:en,title:t,place:$('ev-place').value.trim(),cat:$('ev-cat').value,own:true});
+  save();$('ev-title').value='';$('ev-place').value='';toggleForm(false);renderCal();renderSched();toast('予定を追加しました');
+});
+
+/* ---------- notices ---------- */
+let nFilter='all';const openN=new Set();
+const TABS=[['all','すべて'],['imp','重要'],['hr','人事'],['ga','総務'],['it','IT']];
+function isRead(n){return store.read.includes(n.id)||n.ago>=6;}
+function renderTabs(){$('n-tabs').innerHTML=TABS.map(([k,l])=>'<button type="button" role="tab" class="tab" data-k="'+k+'" aria-selected="'+(k===nFilter)+'">'+l+'</button>').join('');}
+function renderNotices(){
+  const list=NOTICES.filter(n=>nFilter==='all'||(nFilter==='imp'?n.imp:n.cat===nFilter));
+  $('n-list').innerHTML=list.map(n=>{
+    const d=addDays(TODAY,-n.ago),open=openN.has(n.id);
+    return '<li class="n-item'+(isRead(n)?' read':'')+'"><button type="button" class="n-head" data-id="'+n.id+'" aria-expanded="'+open+'">'+
+      '<span class="unread-dot" aria-hidden="true"></span><span><span class="n-tags">'+(n.imp?'<span class="badge important">重要</span>':'')+
+      '<span class="badge" style="--c:var('+NCAT[n.cat].c+')">'+NCAT[n.cat].label+'</span><time>'+mdw(d)+'</time></span>'+
+      '<span class="n-title">'+esc(n.title)+'</span></span></button>'+
+      '<div class="n-body"'+(open?'':' hidden')+'>'+n.body.map(p=>'<p>'+esc(p)+'</p>').join('')+'<p class="from">発信：'+esc(n.from)+'</p></div></li>';
+  }).join('')||'<li class="empty">該当するお知らせはありません。</li>';
+  const unread=NOTICES.filter(n=>!isRead(n)).length;
+  $('n-count').textContent=unread?'未読 '+unread+'件':'すべて既読';
+  updateStats();
+}
+$('n-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;nFilter=b.dataset.k;renderTabs();renderNotices();});
+$('n-list').addEventListener('click',e=>{
+  const b=e.target.closest('.n-head');if(!b)return;const id=b.dataset.id;
+  if(openN.has(id))openN.delete(id);else{openN.add(id);if(!store.read.includes(id)){store.read.push(id);save();}}
+  renderNotices();
+});
+$('n-readall').onclick=()=>{NOTICES.forEach(n=>{if(!store.read.includes(n.id))store.read.push(n.id);});save();renderNotices();toast('すべて既読にしました');};
+
+/* ---------- feed ---------- */
+const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>';
+const BUBBLE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>';
+const openC=new Set();
+function fmt(t){return esc(t).replace(/\n/g,'<br>').replace(/(#[^\s#<]+)/g,'<span class="tag">$1</span>');}
+function allPosts(){return store.posts.concat(SAMPLE_POSTS).sort((a,b)=>b.ts-a.ts);}
+function renderFeed(){
+  $('posts').innerHTML=allPosts().map(p=>{
+    const liked=!!store.likes[p.id],cm=(p.cmts||[]).concat(store.comments[p.id]||[]),open=openC.has(p.id);
+    return '<li class="post"><div class="avatar" style="--c:var('+p.c+')" aria-hidden="true">'+esc(p.name[0])+'</div><div style="min-width:0">'+
+      '<div class="p-head"><span class="p-name">'+esc(p.name)+'</span><span class="p-dept">'+esc(p.dept)+'</span><span class="p-time">'+rel(p.ts)+'</span></div>'+
+      (p.text?'<p class="p-text">'+fmt(p.text)+'</p>':'')+
+      (p.imgs&&p.imgs.length?'<div class="p-imgs '+(p.imgs.length===1?'single':'multi n'+p.imgs.length)+'">'+p.imgs.map((src,i)=>'<button type="button" class="p-img" data-zoom="'+p.id+'" data-i="'+i+'" aria-label="画像'+(i+1)+'を拡大"><img src="'+src+'" alt="'+esc(p.name)+'さんの投稿画像'+(i+1)+'" loading="lazy"></button>').join('')+'</div>':'')+
+      '<div class="p-actions"><button type="button" class="act" data-like="'+p.id+'" aria-pressed="'+liked+'" aria-label="いいね">'+HEART+'<span class="mono">'+((p.likes||0)+(liked?1:0))+'</span></button>'+
+      '<button type="button" class="act" data-cmt="'+p.id+'" aria-expanded="'+open+'">'+BUBBLE+'コメント <span class="mono">'+cm.length+'</span></button></div>'+
+      (open?'<div class="comments">'+cm.map(c=>'<div class="cmt"><b>'+esc(c.name)+'</b>'+esc(c.text)+'</div>').join('')+
+        '<form class="cmt-form" data-post="'+p.id+'"><input type="text" id="cmt-'+p.id+'" maxlength="200" placeholder="コメントを書く" aria-label="コメント"><button class="btn" type="submit">送信</button></form></div>':'')+
+      '</div></li>';
+  }).join('');
+}
+$('posts').addEventListener('click',e=>{
+  const z=e.target.closest('[data-zoom]');
+  if(z){const p=allPosts().find(x=>x.id===z.dataset.zoom);if(p)openLb(p.imgs[+z.dataset.i]);return;}
+  const l=e.target.closest('[data-like]');
+  if(l){const id=l.dataset.like;if(store.likes[id])delete store.likes[id];else store.likes[id]=true;save();renderFeed();return;}
+  const c=e.target.closest('[data-cmt]');
+  if(c){const id=c.dataset.cmt;if(openC.has(id))openC.delete(id);else openC.add(id);renderFeed();const i=$('cmt-'+id);if(i)i.focus();}
+});
+$('posts').addEventListener('submit',e=>{
+  const f=e.target.closest('.cmt-form');if(!f)return;e.preventDefault();
+  const id=f.dataset.post,inp=f.querySelector('input'),v=inp.value.trim();if(!v)return;
+  (store.comments[id]=store.comments[id]||[]).push({name:'鈴木 拓也',text:v});save();renderFeed();
+});
+const ta=$('post-text');
+const MAX_IMGS=4,MAX_SIDE=1280;
+let pending=[];
+function updComposer(){
+  $('post-len').textContent=ta.value.length+' / 500';
+  $('post-btn').disabled=!ta.value.trim()&&!pending.length;
+  const box=$('post-imgs');box.hidden=!pending.length;
+  box.innerHTML=pending.map((src,i)=>'<div class="thumb"><img src="'+src+'" alt="添付画像'+(i+1)+'"><button type="button" data-rm="'+i+'" aria-label="画像'+(i+1)+'を外す">'+ICON_X+'</button></div>').join('');
+}
+function shrink(file){
+  return new Promise((ok,ng)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      const k=Math.min(1,MAX_SIDE/Math.max(img.naturalWidth,img.naturalHeight));
+      const w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+      const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+      g.fillStyle='#ffffff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg',0.82));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);ng();};
+    img.src=url;
+  });
+}
+async function addImages(files){
+  files=files.filter(f=>f&&/^image\//.test(f.type));
+  if(!files.length)return false;
+  const room=MAX_IMGS-pending.length;
+  if(room<=0){toast('画像は1回の投稿につき'+MAX_IMGS+'枚までです');return true;}
+  if(files.length>room)toast('画像は'+MAX_IMGS+'枚までなので、先頭の'+room+'枚を追加しました');
+  for(const f of files.slice(0,room)){
+    try{pending.push(await shrink(f));}catch(e){toast('この画像は読み込めませんでした');}
+  }
+  updComposer();return true;
+}
+ta.addEventListener('input',updComposer);
+$('post-imgs').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;pending.splice(+b.dataset.rm,1);updComposer();});
+$('post-file').addEventListener('change',e=>{addImages([...e.target.files]);e.target.value='';});
+function imagesFrom(dt){return dt?[...(dt.items||[])].filter(i=>i.kind==='file'&&/^image\//.test(i.type)).map(i=>i.getAsFile()):[];}
+document.addEventListener('paste',e=>{
+  const imgs=imagesFrom(e.clipboardData);if(!imgs.length)return;
+  const a=document.activeElement,inComposer=$('composer').contains(a);
+  const typing=a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&!inComposer;
+  if(typing)return;
+  const hasText=e.clipboardData.types&&[...e.clipboardData.types].includes('text/plain');
+  if(!hasText||!inComposer)e.preventDefault();
+  addImages(imgs);
+  if(!inComposer){ta.focus();$('composer').scrollIntoView({block:'nearest'});}
+});
+const comp=$('composer');
+['dragenter','dragover'].forEach(t=>comp.addEventListener(t,e=>{if([...(e.dataTransfer?.types||[])].includes('Files')){e.preventDefault();comp.classList.add('drag');}}));
+['dragleave','drop'].forEach(t=>comp.addEventListener(t,e=>{if(t==='dragleave'&&comp.contains(e.relatedTarget))return;comp.classList.remove('drag');}));
+comp.addEventListener('drop',e=>{const f=[...(e.dataTransfer?.files||[])];if(f.length){e.preventDefault();addImages(f);}});
+comp.addEventListener('submit',e=>{
+  e.preventDefault();const v=ta.value.trim();if(!v&&!pending.length)return;
+  store.posts.push({id:'u'+Date.now(),name:'鈴木 拓也',dept:'経営企画部',c:'--c-meet',ts:Date.now(),likes:0,text:v,imgs:pending.slice(),cmts:[]});
+  const ok=save();ta.value='';pending=[];updComposer();renderFeed();
+  toast(ok?'投稿しました':'投稿しました（画像が大きく、このブラウザには保存できませんでした）');
+});
+function openLb(src){if(!src)return;$('lb-img').src=src;$('lb').hidden=false;$('lb-close').focus();}
+function closeLb(){$('lb').hidden=true;$('lb-img').removeAttribute('src');}
+$('lb').addEventListener('click',e=>{if(e.target.id!=='lb-img')closeLb();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lb').hidden)closeLb();});
+
+/* ---------- requests & approvals ---------- */
+const ME={name:'鈴木 拓也',dept:'経営企画部',c:'--c-meet'};
+const GRANT=20,PRIOR_USED=5;
+const KIND={full:'全日',am:'午前半休',pm:'午後半休'};
+const TRANS={shinkansen:'新幹線',air:'飛行機',car:'社用車',other:'その他'};
+const STATUS={pending:'申請中',approved:'承認済',rejected:'差戻し',withdrawn:'取り下げ'};
+const DAY=864e5,HOUR=36e5;
+const SAMPLE_REQ=[
+ {id:'r1',own:true,type:'leave',kind:'full',from:ymd(biz(-8)),to:ymd(biz(-8)),reason:'私用のため',created:NOW-12*DAY,status:'approved',decidedAt:NOW-11*DAY,decidedBy:'山田部長'},
+ {id:'r2',own:true,type:'leave',kind:'pm',from:ymd(biz(2)),to:ymd(biz(2)),reason:'通院のため',created:NOW-3*DAY,status:'rejected',comment:'下期キックオフと重なるため、別日での取得をお願いします。',decidedAt:NOW-2*DAY,decidedBy:'山田部長'},
+ {id:'r3',own:true,type:'trip',from:ymd(biz(10)),to:ymd(biz(11)),dest:'名古屋',purpose:'中部エリアの顧客3社へ下期計画を説明',trans:'shinkansen',cost:42600,created:NOW-1*DAY,status:'pending'},
+ {id:'r4',who:{name:'佐藤 美穂',dept:'経営企画部',c:'--c-hr'},type:'leave',kind:'full',from:ymd(biz(5)),to:ymd(biz(6)),reason:'家族旅行のため',created:NOW-5*HOUR,status:'pending'},
+ {id:'r5',who:{name:'渡辺 大輔',dept:'経営企画部',c:'--c-all'},type:'trip',from:ymd(biz(7)),to:ymd(biz(8)),dest:'大阪',purpose:'港北物流 大阪拠点での導入打ち合わせ',trans:'shinkansen',cost:58400,created:NOW-20*HOUR,status:'pending'},
+ {id:'r6',who:{name:'加藤 優',dept:'経営企画部',c:'--c-train'},type:'leave',kind:'am',from:ymd(biz(3)),to:ymd(biz(3)),reason:'役所での手続きのため',created:NOW-26*HOUR,status:'pending'},
+ {id:'r7',who:{name:'加藤 優',dept:'経営企画部',c:'--c-train'},type:'leave',kind:'full',from:ymd(biz(13)),to:ymd(biz(13)),reason:'私用のため',created:NOW-6*DAY,status:'approved',decidedAt:NOW-5*DAY,decidedBy:'鈴木'}
+];
+function reqs(){return SAMPLE_REQ.concat(store.requests).map(r=>Object.assign({},r,store.reqState[r.id]||{}));}
+function countBiz(a,b){let d=parse(a),n=0;const e=parse(b);while(d<=e){if(!isOff(d))n++;d=addDays(d,1);}return n;}
+function spanDays(a,b){return Math.round((parse(b)-parse(a))/DAY)+1;}
+function reqDays(r){return r.type==='leave'?(r.kind==='full'?countBiz(r.from,r.to):0.5):spanDays(r.from,r.to);}
+const yen=n=>'¥'+Number(n).toLocaleString('ja-JP');
+const tripLen=n=>n===1?'日帰り':(n-1)+'泊'+n+'日';
+const fmtDays=n=>(Math.round(n*10)/10)+'日';
+function rangeTxt(r){return r.from===r.to?mdw(parse(r.from)):mdw(parse(r.from))+' – '+mdw(parse(r.to));}
+function balance(){
+  let used=PRIOR_USED,pend=0;
+  reqs().forEach(r=>{if(!r.own||r.type!=='leave')return;if(r.status==='approved')used+=reqDays(r);if(r.status==='pending')pend+=reqDays(r);});
+  return {used,pend,remain:GRANT-used};
+}
+function reqEvents(){
+  const out=[];
+  reqs().forEach(r=>{
+    if(!(r.status==='approved'||(r.own&&r.status==='pending')))return;
+    const who=r.own?'':r.who.name.split(' ')[0]+'さん ';
+    const tag=r.status==='pending'?'（申請中）':'';
+    let d=parse(r.from);const e=parse(r.to);
+    while(d<=e){
+      const ds=ymd(d);
+      if(r.type==='leave'){
+        if(!isOff(d)){
+          const t=r.kind==='am'?['09:00','13:00']:r.kind==='pm'?['13:00','18:00']:['',''];
+          out.push({id:r.id+ds,date:ds,start:t[0],end:t[1],title:who+(r.kind==='full'?'年休':KIND[r.kind])+tag,place:'',cat:'leave'});
+        }
+      }else out.push({id:r.id+ds,date:ds,start:'',end:'',title:who+'出張（'+r.dest+'）'+tag,place:TRANS[r.trans],cat:'trip'});
+      d=addDays(d,1);
+    }
+  });
+  return out;
+}
+
+let apTab='inbox';const rejOpen=new Set(),wdOpen=new Set();
+function renderBalance(){
+  const b=balance(),u=Math.min(100,b.used/GRANT*100),p=Math.min(100-u,b.pend/GRANT*100);
+  $('bal').innerHTML='<div class="bal-row"><span>年休の残り <b>'+(Math.round(b.remain*10)/10)+'</b>日</span><span>付与 '+GRANT+'日 · 取得済 '+fmtDays(b.used)+(b.pend?' · 申請中 '+fmtDays(b.pend):'')+'</span></div>'+
+    '<div class="meter" role="img" aria-label="年休 付与'+GRANT+'日のうち取得済'+b.used+'日、申請中'+b.pend+'日"><i class="used" style="width:'+u+'%"></i><i class="pend" style="width:'+p+'%"></i></div>';
+}
+function rqCard(r,mode){
+  const who=r.own?ME:r.who,days=reqDays(r);
+  const typeB=r.type==='leave'?'<span class="badge" style="--c:var(--c-leave)">'+(r.kind==='full'?'年休':KIND[r.kind])+'</span>':'<span class="badge" style="--c:var(--c-trip)">出張</span>';
+  const amount=r.type==='leave'?fmtDays(days):tripLen(days);
+  const detail=r.type==='leave'?esc(r.reason||'理由の記載なし'):esc(r.dest)+' · '+esc(r.purpose)+'<br><span style="color:var(--muted)">'+TRANS[r.trans]+' · 概算 '+yen(r.cost)+'</span>';
+  let meta=mode==='own'?'申請 '+rel(r.created)+' · 承認者：山田部長':'申請 '+rel(r.created);
+  if(r.decidedAt&&r.status!=='pending'&&r.status!=='withdrawn')meta+=' · '+(r.decidedBy||'鈴木')+'が'+STATUS[r.status].replace('承認済','承認').replace('差戻し','差戻し')+'（'+rel(r.decidedAt)+'）';
+  let h='<li class="rq"><div class="avatar" style="--c:var('+who.c+')" aria-hidden="true">'+esc(who.name[0])+'</div><div style="min-width:0">'+
+    '<div class="rq-top"><span class="rq-name">'+esc(mode==='own'?'自分':who.name)+'</span>'+typeB+'<span class="status st-'+r.status+'">'+STATUS[r.status]+'</span></div>'+
+    '<div class="rq-when">'+rangeTxt(r)+'<span>'+amount+'</span></div>'+
+    '<div class="rq-detail">'+detail+'</div><div class="rq-meta">'+meta+'</div>';
+  if(r.status==='rejected'&&r.comment)h+='<div class="rq-note"><b>差戻しコメント</b>　'+esc(r.comment)+'</div>';
+  if(mode==='inbox'&&r.status==='pending'){
+    if(rejOpen.has(r.id))h+='<div class="rq-reject"><label for="rej-'+r.id+'">差戻しの理由（申請者に表示されます）</label><textarea id="rej-'+r.id+'" maxlength="200" placeholder="例：日程を再調整してください"></textarea>'+
+      '<p class="form-err" id="rejerr-'+r.id+'" hidden>差戻しの理由を入力してください。</p>'+
+      '<div class="rq-actions"><button type="button" class="btn danger solid" data-reject-go="'+r.id+'">差戻す</button><button type="button" class="text-btn" data-reject-cancel="'+r.id+'">キャンセル</button></div></div>';
+    else h+='<div class="rq-actions"><button type="button" class="btn" data-approve="'+r.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>承認</button><button type="button" class="btn danger" data-reject="'+r.id+'">差戻し</button></div>';
+  }
+  if(mode==='own'){
+    if(r.status==='pending')h+=wdOpen.has(r.id)?'<div class="rq-actions"><span class="ask">この申請を取り下げますか？</span><button type="button" class="btn danger solid" data-wd-go="'+r.id+'">取り下げる</button><button type="button" class="text-btn" data-wd-cancel="'+r.id+'">戻る</button></div>'
+      :'<div class="rq-actions"><button type="button" class="text-btn" data-wd="'+r.id+'">取り下げ</button></div>';
+    if(r.status==='rejected')h+='<div class="rq-actions"><button type="button" class="btn ghost" data-resubmit="'+r.id+'">内容を修正して再申請</button></div>';
+  }
+  return h+'</div></li>';
+}
+function renderApprovals(){
+  const all=reqs();
+  const inbox=all.filter(r=>!r.own&&r.status==='pending').sort((a,b)=>a.created-b.created);
+  const done=all.filter(r=>!r.own&&r.status!=='pending').sort((a,b)=>(b.decidedAt||0)-(a.decidedAt||0));
+  const mine=all.filter(r=>r.own).sort((a,b)=>b.created-a.created);
+  const minePend=mine.filter(r=>r.status==='pending').length;
+  $('ap-count').textContent=inbox.length?'承認待ち '+inbox.length+'件':'承認待ちなし';
+  $('ap-tabs').innerHTML=[['inbox','承認待ち（'+inbox.length+'）'],['own','自分の申請'+(minePend?'（申請中 '+minePend+'）':'')]]
+    .map(([k,l])=>'<button type="button" role="tab" class="tab" data-k="'+k+'" aria-selected="'+(k===apTab)+'">'+l+'</button>').join('');
+  let h='';
+  if(apTab==='inbox'){
+    h=inbox.length?inbox.map(r=>rqCard(r,'inbox')).join(''):'<li class="empty">承認待ちの申請はありません。</li>';
+    if(done.length)h+='<li class="sub-h" style="margin-top:0">処理済み</li>'+done.map(r=>rqCard(r,'done')).join('');
+  }else h=mine.length?mine.map(r=>rqCard(r,'own')).join(''):'<li class="empty">まだ申請はありません。「新規申請」から年休や出張を申請できます。</li>';
+  $('rq-list').innerHTML=h;
+  renderBalance();
+}
+function refreshAll(){renderCal();renderSched();renderApprovals();}
+$('ap-tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;apTab=b.dataset.k;renderApprovals();});
+function setState(id,st){store.reqState[id]=Object.assign(store.reqState[id]||{},st);save();}
+$('rq-list').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+  if(d.approve){setState(d.approve,{status:'approved',decidedAt:Date.now(),decidedBy:'鈴木'});refreshAll();toast('承認しました');}
+  else if(d.reject){rejOpen.add(d.reject);renderApprovals();const x=$('rej-'+d.reject);if(x)x.focus();}
+  else if(d.rejectCancel){rejOpen.delete(d.rejectCancel);renderApprovals();}
+  else if(d.rejectGo){
+    const v=$('rej-'+d.rejectGo).value.trim();
+    if(!v){$('rejerr-'+d.rejectGo).hidden=false;$('rej-'+d.rejectGo).focus();return;}
+    rejOpen.delete(d.rejectGo);setState(d.rejectGo,{status:'rejected',comment:v,decidedAt:Date.now(),decidedBy:'鈴木'});refreshAll();toast('差戻しました');
+  }
+  else if(d.wd){wdOpen.add(d.wd);renderApprovals();}
+  else if(d.wdCancel){wdOpen.delete(d.wdCancel);renderApprovals();}
+  else if(d.wdGo){wdOpen.delete(d.wdGo);setState(d.wdGo,{status:'withdrawn'});refreshAll();toast('申請を取り下げました');}
+  else if(d.resubmit){const r=reqs().find(x=>x.id===d.resubmit);if(r)openRq(true,r);}
+});
+
+/* request form */
+let rqType='leave';
+function setType(t){
+  rqType=t;$('rq-form').querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));
+  $('f-leave').hidden=$('f-leave2').hidden=t!=='leave';$('f-trip').hidden=t!=='trip';syncKind();updSum();
+}
+function syncKind(){
+  const half=rqType==='leave'&&$('rq-kind').value!=='full';
+  if(half)$('rq-to').value=$('rq-from').value;
+  $('rq-to').disabled=half;
+}
+function draft(){
+  const r={type:rqType,from:$('rq-from').value,to:$('rq-to').value||$('rq-from').value};
+  if(rqType==='leave'){r.kind=$('rq-kind').value;if(r.kind!=='full')r.to=r.from;r.reason=$('rq-reason').value.trim();}
+  else{r.dest=$('rq-dest').value.trim();r.purpose=$('rq-purpose').value.trim();r.trans=$('rq-trans').value;r.cost=$('rq-cost').value===''?null:Math.round(Number($('rq-cost').value));}
+  return r;
+}
+function updSum(){
+  const r=draft(),el=$('rq-sum');
+  if(!r.from||!r.to||r.to<r.from){el.textContent='日付を選ぶと日数を計算します。';return;}
+  const n=reqDays(r);
+  if(rqType==='leave'){const b=balance();el.textContent='取得 '+fmtDays(n)+'（営業日のみ）· 申請後の年休残 '+fmtDays(b.remain-b.pend-n);}
+  else el.textContent=tripLen(n)+(r.cost!=null&&!isNaN(r.cost)?' · 概算 '+yen(r.cost):'');
+}
+function openRq(open,pre){
+  $('rq-form').hidden=!open;$('rq-toggle').setAttribute('aria-expanded',open);$('rq-err').hidden=true;
+  if(!open)return;
+  const nb=ymd(biz(1));
+  ['rq-reason','rq-dest','rq-purpose','rq-cost'].forEach(i=>$(i).value='');$('rq-kind').value='full';$('rq-trans').value='shinkansen';
+  $('rq-from').value=nb;$('rq-to').value=nb;
+  if(pre){
+    $('rq-from').value=pre.from;$('rq-to').value=pre.to;
+    if(pre.type==='leave'){$('rq-kind').value=pre.kind;$('rq-reason').value=pre.reason||'';}
+    else{$('rq-dest').value=pre.dest;$('rq-purpose').value=pre.purpose;$('rq-trans').value=pre.trans;$('rq-cost').value=pre.cost;}
+  }
+  setType(pre?pre.type:rqType);
+  $('rq-form').scrollIntoView({block:'nearest'});
+}
+$('rq-toggle').onclick=()=>openRq($('rq-form').hidden);
+$('rq-cancel').onclick=()=>openRq(false);
+$('rq-form').querySelectorAll('.seg button').forEach(b=>b.onclick=()=>setType(b.dataset.t));
+$('rq-kind').addEventListener('change',()=>{syncKind();updSum();});
+$('rq-from').addEventListener('change',()=>{const f=$('rq-from').value;if(!$('rq-to').value||$('rq-to').value<f)$('rq-to').value=f;syncKind();updSum();});
+['rq-to','rq-cost'].forEach(i=>$(i).addEventListener('input',updSum));
+$('rq-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const r=draft(),err=$('rq-err');const fail=m=>{err.textContent=m;err.hidden=false;};
+  if(!r.from||!r.to)return fail('開始日と終了日を入力してください。');
+  if(r.to<r.from)return fail('終了日は開始日以降の日付にしてください。');
+  if(r.type==='leave'){
+    const n=reqDays(r),b=balance();
+    if(n===0)return fail('選択した期間に営業日がありません。');
+    if(r.kind!=='full'&&isOff(parse(r.from)))return fail('半休は営業日に申請してください。');
+    if(n>b.remain-b.pend)return fail('年休の残りが足りません（残り '+fmtDays(b.remain)+'、うち申請中 '+fmtDays(b.pend)+'）。');
+    const clash=reqs().some(x=>x.own&&x.type==='leave'&&(x.status==='pending'||x.status==='approved')&&x.from<=r.to&&x.to>=r.from);
+    if(clash)return fail('同じ期間に申請済みの年休があります。');
+  }else{
+    if(!r.dest)return fail('行き先を入力してください。');
+    if(!r.purpose)return fail('目的を入力してください。');
+    if(r.cost==null||isNaN(r.cost)||r.cost<0)return fail('概算費用を0円以上で入力してください。');
+  }
+  store.requests.push(Object.assign(r,{id:'q'+Date.now(),own:true,created:Date.now(),status:'pending'}));
+  save();openRq(false);apTab='own';refreshAll();toast('申請しました。山田部長の承認を待っています');
+});
+
+/* ---------- summary ---------- */
+function updateStats(){
+  const t=eventsOn(ymd(TODAY)).length,n=NOTICES.filter(x=>!isRead(x)).length;
+  const next=allEvents().filter(e=>e.date>ymd(TODAY)).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start))[0];
+  const a=reqs().filter(r=>!r.own&&r.status==='pending').length;
+  $('hello-stats').innerHTML='<span>今日の予定 <b>'+t+'</b>件</span><span>承認待ち <b>'+a+'</b>件</span><span>未読のお知らせ <b>'+n+'</b>件</span>'+
+    (next?'<span>次の予定：'+mdw(parse(next.date))+' <b>'+next.start+'</b> '+esc(next.title)+'</span>':'');
+}
+
+renderCal();renderSched();renderApprovals();renderTabs();renderNotices();renderFeed();
+})();
+</script>
+
+</body>
+</html>
